@@ -20,59 +20,26 @@
  */
 
 #include "harness.h"
-#include <libgen.h>
 
-Window win;
-int screen;
-
-int
-main(int argc, char **argv)
+void
+setup(int argc, char **argv)
 {
-	XEvent ev;
-	XTextProperty name;
-	char *title = basename(argv[0]);
-	int screen;
+	XSizeHints *hints;
 
-	dpy = XOpenDisplay(NULL);
-	if (!dpy)
-		err(1, "can't open $DISPLAY");
+	hints = XAllocSizeHints();
+	if (!hints)
+		err(1, "XAllocSizeHints");
 
-	screen = DefaultScreen(dpy);
-	root = RootWindow(dpy, screen);
+	hints->flags = PPosition | PSize;
+	hints->x = 10;
+	hints->y = 10;
+	hints->width = 200;
+	hints->height = 200;
 
-	find_supported_atoms();
+	XSetWMNormalHints(dpy, win, hints);
+}
 
-	win = XCreateWindow(dpy, root, 0, 0, 300, 200, 0,
-	    DefaultDepth(dpy, screen), CopyFromParent,
-	    DefaultVisual(dpy, screen), 0, NULL);
-	if (!win)
-		err(1, "XCreateWindow");
-
-	if (!XStringListToTextProperty(&title, 1, &name))
-		err(1, "!XStringListToTextProperty");
-	XSetWMName(dpy, win, &name);
-
-	XSetWindowBackground(dpy, win, WhitePixel(dpy, screen));
-	XSelectInput(dpy, win, KeyPressMask);
-
-	setup(argc, argv);
-
-	XMapWindow(dpy, win);
-
-	for (;;) {
-		XNextEvent(dpy, &ev);
-
-		switch (ev.type) {
-		case KeyPress: {
-			KeySym kc = XLookupKeysym(&ev.xkey, 0);
-			if (kc == XK_Escape)
-				exit(0);
-			break;
-		}
-		}
-
-		process_event(&ev);
-	}
-
-	return 0;
+void
+process_event(XEvent *ev)
+{
 }
